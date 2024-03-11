@@ -30,6 +30,9 @@ jobs:
       - shell: bash
         run: |
           cp -rf source/* target/
+          cp -rf source/.devcontainer target/
+          cp -rf source/.github target/
+          cp -rf source/.gitignore target/
           cd target
           git config user.name "btp-automation-scenarios"
           git config user.email "noreply@btpautomation.com"
