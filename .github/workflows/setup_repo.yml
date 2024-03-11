@@ -1,0 +1,92 @@
+name: Setup Sample Repository
+on:
+  workflow_dispatch:
+    inputs:
+      TARGET_REPO:
+        description: 'The repository to clone to'
+        required: true
+      PROJECT_NAME:
+        description: "Name of the project"
+        required: true
+      REGION:
+        description: "Region for the sub account"
+        default: "eu10"
+        required: true
+      COST_CENTER:
+        description: "Cost center for the project"
+        default: "1234567890"
+        required: true
+      STAGE:
+        description: "Stage for the project"
+        default: "DEV"
+        required: true
+      ORGANIZATION:
+        description: "Organization for the project"
+        default: "B2C"
+        required: true  
+
+permissions:
+  contents: write
+jobs:
+  clone-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: btp-automation-scenarios/sample-btptf-setup
+          path: source
+          sparse-checkout: |
+            .
+            .github
+            .devcontainer
+            infra
+            src
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.inputs.TARGET_REPO }}
+          path: target
+          token:  ${{ secrets.GH_CLONE_TOKEN }}
+      - shell: bash
+        run: |
+          cp -rf source/* target/
+          cp -rf source/.devcontainer target/
+          cp -rf source/.github target/
+          cp -rf source/.gitignore target/
+          cd target
+          git config user.name "btp-automation-scenarios"
+          git config user.email "noreply@btpautomation.com"
+          git add .
+          git commit -m "Initial basic setup by GH Action"
+          git push
+  
+  trigger-terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/script@v7
+        env:
+          PROJECT_NAME: ${{ github.event.inputs.PROJECT_NAME }}
+          REGION: ${{ github.event.inputs.REGION }}
+          COST_CENTER: ${{ github.event.inputs.COST_CENTER }}
+          STAGE: ${{ github.event.inputs.STAGE }}
+          ORGANIZATION: ${{ github.event.inputs.ORGANIZATION }}
+          TARGET_REPO: ${{ github.event.inputs.TARGET_REPO }}
+        with:
+          github-token: ${{ secrets.GH_CLONE_TOKEN }}
+          script: |
+            const result = await github.request(
+              'POST /repos/{owner}/{repo}/dispatches',
+              {
+                owner: 'btp-automation-scenarios',
+                repo: process.env.TARGET_REPO,
+                event_type: 'triggerTerraformSetup',
+                client_payload: {
+                  project_name: process.env.PROJECT_NAME,
+                  region: process.env.REGION,
+                  cost_center: process.env.COST_CENTER,
+                  stage: process.env.STAGE,
+                  organization: process.env.ORGANIZATION
+                }
+              }
+            )
+            console.log(result)
+            
