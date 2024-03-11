@@ -1,0 +1,37 @@
+name: Close Stale Issues and PRs
+on:
+  workflow_dispatch:
+    inputs:
+      TARGET_REPO:
+        description: 'The repository to clone'
+        required: true
+
+permissions:
+  contents: write
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: btp-automation-scenarios/sample-btptf-setup
+          path: source
+          sparse-checkout: |
+            .
+            .github
+            .devcontainer
+            infra
+            src
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.inputs.TARGET_REPO }}
+          path: target
+      - shell: bash
+        run: |
+          cp -rf source/* target/
+          cd target
+          git config user.name "btp-automation-scenarios"
+          git config user.email "noreply@btpautomation.com"
+          git add .
+          git commit -m "Initial basic setup by GH Action"
+          git push    
