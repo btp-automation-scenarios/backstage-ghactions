@@ -3,13 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       TARGET_REPO:
-        description: 'The repository to clone'
+        description: 'The repository to clone to'
         required: true
 
 permissions:
   contents: write
 jobs:
-  stale:
+  clone-repo:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
