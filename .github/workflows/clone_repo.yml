@@ -1,4 +1,4 @@
-name: Close Stale Issues and PRs
+name: Clone Sample repository
 on:
   workflow_dispatch:
     inputs:
