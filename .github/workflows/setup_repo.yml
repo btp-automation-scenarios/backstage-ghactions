@@ -10,19 +10,19 @@ on:
         required: true
       REGION:
         description: "Region for the sub account"
-        default: "eu10"
+        #default: "eu10"
         required: true
       COST_CENTER:
         description: "Cost center for the project"
-        default: "1234567890"
+        #default: "1234567890"
         required: true
       STAGE:
         description: "Stage for the project"
-        default: "DEV"
+        #default: "DEV"
         required: true
       ORGANIZATION:
         description: "Organization for the project"
-        default: "B2C"
+        #default: "B2C"
         required: true  
 
 permissions:
