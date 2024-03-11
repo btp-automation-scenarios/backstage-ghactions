@@ -26,6 +26,7 @@ jobs:
         with:
           repository: ${{ github.event.inputs.TARGET_REPO }}
           path: target
+          token:  ${{ secrets.GH_CLONE_TOKEN }}
       - shell: bash
         run: |
           cp -rf source/* target/
