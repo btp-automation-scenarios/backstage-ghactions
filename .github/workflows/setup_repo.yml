@@ -43,7 +43,7 @@ jobs:
             src
       - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.inputs.TARGET_REPO }}
+          repository: btp-automation-scenarios/${{ github.event.inputs.TARGET_REPO }}
           path: target
           token:  ${{ secrets.GH_CLONE_TOKEN }}
       - shell: bash
