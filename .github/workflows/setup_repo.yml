@@ -10,19 +10,15 @@ on:
         required: true
       REGION:
         description: "Region for the sub account"
-        #default: "eu10"
         required: true
       COST_CENTER:
         description: "Cost center for the project"
-        #default: "1234567890"
         required: true
       STAGE:
         description: "Stage for the project"
-        #default: "DEV"
         required: true
       ORGANIZATION:
         description: "Organization for the project"
-        #default: "B2C"
         required: true  
 
 permissions:
@@ -31,7 +27,8 @@ jobs:
   clone-repo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source repository
+        uses: actions/checkout@v4
         with:
           repository: btp-automation-scenarios/sample-btptf-setup
           path: source
@@ -41,12 +38,14 @@ jobs:
             .devcontainer
             infra
             src
-      - uses: actions/checkout@v4
+      - name: Checkout target repository
+        uses: actions/checkout@v4
         with:
           repository: btp-automation-scenarios/${{ github.event.inputs.TARGET_REPO }}
           path: target
           token:  ${{ secrets.GH_CLONE_TOKEN }}
-      - shell: bash
+      - name: Copy files from source to target
+        shell: bash
         run: |
           cp -rf source/* target/
           cp -rf source/.devcontainer target/
@@ -56,46 +55,38 @@ jobs:
           git config user.name "btp-automation-scenarios"
           git config user.email "noreply@btpautomation.com"
           git add .
-          git commit -m "Initial basic setup by GH Action"
+          git commit -m "Basic setup by GH Action"
           git push
-      - shell: bash
-        run: |
-          echo 'PROJECT_NAME: ${{ github.event.inputs.PROJECT_NAME }}'
-          echo 'REGION: ${{ github.event.inputs.REGION }}'
-          echo 'COST_CENTER: ${{ github.event.inputs.COST_CENTER }}'
-          echo 'STAGE: ${{ github.event.inputs.STAGE }}'
-          echo 'ORGANIZATION: ${{ github.event.inputs.ORGANIZATION }}'
-          echo 'TARGET_REPO: ${{ github.event.inputs.TARGET_REPO }}'
   
-#  trigger-terraform:
-#    runs-on: ubuntu-latest
-#    needs:  clone-repo
-#    steps:
-#      - uses: actions/script@v7
-#        env:
-#          PROJECT_NAME: ${{ github.event.inputs.PROJECT_NAME }}
-#          REGION: ${{ github.event.inputs.REGION }}
-#          COST_CENTER: ${{ github.event.inputs.COST_CENTER }}
-#          STAGE: ${{ github.event.inputs.STAGE }}
-#          ORGANIZATION: ${{ github.event.inputs.ORGANIZATION }}
-#          TARGET_REPO: ${{ github.event.inputs.TARGET_REPO }}
-#        with:
-#          github-token: ${{ secrets.GH_CLONE_TOKEN }}
-#          script: |
-#            const result = await github.request(
-#              'POST /repos/{owner}/{repo}/dispatches',
-#              {
-#                owner: 'btp-automation-scenarios',
-#                repo: process.env.TARGET_REPO,
-#                event_type: 'triggerTerraformSetup',
-#                client_payload: {
-#                  project_name: process.env.PROJECT_NAME,
-#                  region: process.env.REGION,
-#                  cost_center: process.env.COST_CENTER,
-#                  stage: process.env.STAGE,
-#                  organization: process.env.ORGANIZATION
-#                }
-#              }
-#            )
-#            console.log(result)
-#            
+  trigger-terraform:
+    runs-on: ubuntu-latest
+    needs:  clone-repo
+    steps:
+      - uses: actions/script@v7
+        env:
+          PROJECT_NAME: ${{ github.event.inputs.PROJECT_NAME }}
+          REGION: ${{ github.event.inputs.REGION }}
+          COST_CENTER: ${{ github.event.inputs.COST_CENTER }}
+          STAGE: ${{ github.event.inputs.STAGE }}
+          ORGANIZATION: ${{ github.event.inputs.ORGANIZATION }}
+          TARGET_REPO: ${{ github.event.inputs.TARGET_REPO }}
+        with:
+          github-token: ${{ secrets.GH_CLONE_TOKEN }}
+          script: |
+            const result = await github.request(
+              'POST /repos/{owner}/{repo}/dispatches',
+              {
+                owner: 'btp-automation-scenarios',
+                repo: process.env.TARGET_REPO,
+                event_type: 'triggerTerraformSetup',
+                client_payload: {
+                  PROJECT_NAME: process.env.PROJECT_NAME,
+                  REGION: process.env.REGION,
+                  COST_CENTER: process.env.COST_CENTER,
+                  STAGE: process.env.STAGE,
+                  ORGANIZATION: process.env.ORGANIZATION
+                }
+              }
+            )
+            console.log(result)
+            
